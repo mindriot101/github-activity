@@ -49,9 +49,7 @@ def query_fetch_commits_for_branch():
         _op_repository_ref_target__as__Commit_history_edges.node()
     )
     _op_repository_ref_target__as__Commit_history_edges_node.oid()
-    _op_repository_ref_target__as__Commit_history_edges_node.committed_date(
-        __alias__="created_at"
-    )
+    _op_repository_ref_target__as__Commit_history_edges_node.committed_date()
     return _op
 
 

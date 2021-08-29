@@ -13,7 +13,7 @@ query FetchCommitsForBranch($name: String!, $owner: String!, $branch: String!, $
             edges {
               node {
                 oid
-                createdAt: committedDate
+                committedDate
               }
             }
           }
