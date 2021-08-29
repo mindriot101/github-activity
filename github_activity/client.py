@@ -19,6 +19,12 @@ DEFAULT_PAGE_SIZE = 100
 logger = logging.getLogger(__name__)
 
 
+class GraphQLErrors(Exception):
+    def __init__(self, errors):
+        self.errors = errors
+        super().__init__("Errors in graphql response")
+
+
 class EventType(enum.Enum):
     IssueCreated = enum.auto()
     IssueComment = enum.auto()
@@ -116,6 +122,10 @@ class Client:
             data["after"] = after
             logger.debug(f"variables: {data}")
             data = self.endpoint(op, data)
+
+            if "errors" in data:
+                raise GraphQLErrors(data["errors"])
+
             typed_data = op + data
 
             base_node = base_lens_fn(typed_data)
