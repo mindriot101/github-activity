@@ -28,6 +28,7 @@ class GraphQLErrors(Exception):
 class EventType(enum.Enum):
     IssueCreated = enum.auto()
     IssueComment = enum.auto()
+    IssueClosed = enum.auto()
     PullRequestCreated = enum.auto()
     PullRequestComment = enum.auto()
     Commit = enum.auto()
@@ -37,14 +38,21 @@ class EventType(enum.Enum):
 
 
 class Event:
-    def __init__(self, type, node):
+    def __init__(self, type, node=None, json=None):
         self.type = type
         self.node = node
+        self.json = json
 
     def to_dict(self):
-        node_data = self.node.__to_json_value__()
+        node_data = {}
+        if self.node is not None:
+            node_data.update(self.node.__to_json_value__())
+        if self.json is not None:
+            node_data.update(self.json)
+
         if self.type == EventType.Commit:
             node_data["createdAt"] = node_data.pop("committedDate")
+
         return {"type": self.type.to_dict(), **node_data}
 
 
@@ -59,6 +67,10 @@ class Client:
     def timeline(self, owner, repo, branch):
         for issue in self._issues(owner, repo):
             yield Event(type=EventType.IssueCreated, node=issue)
+            if issue.closed_at is not None:
+                yield Event(
+                    type=EventType.IssueClosed, json={"createdAt": issue.closed_at}
+                )
             for comment in self._issue_comments(issue.id):
                 yield Event(type=EventType.IssueComment, node=comment)
 

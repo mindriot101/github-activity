@@ -33,6 +33,7 @@ def query_fetch_issues():
     _op_repository_issues_edges_node.id()
     _op_repository_issues_edges_node.title()
     _op_repository_issues_edges_node.created_at()
+    _op_repository_issues_edges_node.closed_at()
     return _op
 
 

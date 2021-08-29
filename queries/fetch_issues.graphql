@@ -10,6 +10,7 @@ query FetchIssues($name: String!, $owner: String!, $first: Int!, $after: String)
           id
           title
           createdAt
+          closedAt
         }
       }
     }
