@@ -10,6 +10,8 @@ query FetchPullRequests($name:String!, $owner:String!, $after:String, $first:Int
             id
             title
             createdAt
+            closedAt
+            mergedAt
         }
       }
     }

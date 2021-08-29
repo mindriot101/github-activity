@@ -31,6 +31,8 @@ class EventType(enum.Enum):
     IssueClosed = enum.auto()
     PullRequestCreated = enum.auto()
     PullRequestComment = enum.auto()
+    PullRequestClosed = enum.auto()
+    PullRequestMerged = enum.auto()
     Commit = enum.auto()
 
     def to_dict(self):
@@ -76,6 +78,18 @@ class Client:
 
         for pr in self._pull_requests(owner, repo):
             yield Event(type=EventType.PullRequestCreated, node=pr)
+            if pr.merged_at is not None:
+                yield Event(
+                    type=EventType.PullRequestMerged, json={"createdAt": pr.merged_at}
+                )
+            if pr.closed_at is not None:
+                # only emit the closed at event if the timestamp is different
+                # to the merged at time
+                if pr.merged_at is not None and pr.closed_at != pr.merged_at:
+                    yield Event(
+                        type=EventType.PullRequestClosed,
+                        json={"createdAt": pr.closed_at},
+                    )
             for comment in self._pull_request_comments(pr.id):
                 yield Event(type=EventType.PullRequestComment, node=comment)
 

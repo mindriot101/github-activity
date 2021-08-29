@@ -33,6 +33,8 @@ def query_fetch_pull_requests():
     _op_repository_pull_requests_edges_node.id()
     _op_repository_pull_requests_edges_node.title()
     _op_repository_pull_requests_edges_node.created_at()
+    _op_repository_pull_requests_edges_node.closed_at()
+    _op_repository_pull_requests_edges_node.merged_at()
     return _op
 
 
