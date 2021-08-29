@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "github-activity"
 version = "0.1.0"
-description = ""
-authors = ["Your Name <you@example.com>"]
+description = "Fetch the timeline for a repository."
+authors = ["Simon Walker <s.r.walker101@googlemail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
