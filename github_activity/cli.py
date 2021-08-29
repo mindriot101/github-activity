@@ -1,7 +1,7 @@
 import argparse
 import os
 
-from github_api.client import Client
+from github_activity.client import Client
 
 
 def main():

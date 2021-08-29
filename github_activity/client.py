@@ -1,6 +1,6 @@
 from sgqlc.endpoint.requests import RequestsEndpoint
 
-from github_api import fetch_issue_comments, fetch_issues
+from github_activity import fetch_issue_comments, fetch_issues
 
 
 HOSTNAME = "https://api.github.com/graphql"

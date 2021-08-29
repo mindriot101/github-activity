@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "github-api"
+name = "github-activity"
 version = "0.1.0"
 description = ""
 authors = ["Your Name <you@example.com>"]
@@ -21,12 +21,12 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-fetch = 'github_api.cli:main'
+fetch = 'github_activity.cli:main'
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
 [tool.black]
 extend-exclude = """
-^/github_api/github_schema.py
+^/github_activity/github_schema.py
 """
