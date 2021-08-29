@@ -1,0 +1,15 @@
+query FetchBranches($name: String!, $owner: String!, $first: Int!, $after: String) {
+  repository(name: $name, owner: $owner) {
+    refs(refPrefix: "refs/heads/", first: $first, after: $after) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      edges {
+        node {
+          id
+        }
+      }
+    }
+  }
+}

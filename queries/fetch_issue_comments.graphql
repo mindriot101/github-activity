@@ -1,0 +1,17 @@
+query FetchIssueComments($id:ID!, $first: Int!, $after: String) {
+  node(id:$id) {
+    ... on Issue {
+      comments(first:$first, after:$after) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        edges {
+          node {
+            createdAt
+          }
+        }
+      }
+    }
+  }
+}

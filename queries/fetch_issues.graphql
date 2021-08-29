@@ -1,0 +1,17 @@
+query FetchIssues($name: String!, $owner: String!, $first: Int!, $after: String) {
+  repository(name: $name, owner: $owner) {
+    issues(first: $first, after: $after) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      edges {
+        node {
+          id
+          title
+          createdAt
+        }
+      }
+    }
+  }
+}

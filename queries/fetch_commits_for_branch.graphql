@@ -1,0 +1,22 @@
+query FetchCommitsForBranch($id: ID!, $first: Int, $after: String) {
+  node(id: $id) {
+    ... on Ref {
+      name
+      target {
+        ... on Commit {
+          history(first: $first, after: $after) {
+            pageInfo {
+              hasNextPage
+            }
+            edges {
+              node {
+                committedDate
+                oid
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+query FetchPullRequestComments($id: ID!, $first:Int!, $cursor:String) {
+  node(id: $id) {
+    ... on PullRequest {
+      comments(first:$first, after:$cursor) {
+        nodes {
+          createdAt
+        }
+      }
+    }
+  }
+}
