@@ -1,9 +1,15 @@
-query FetchPullRequestComments($id: ID!, $first:Int!, $cursor:String) {
+query FetchPullRequestComments($id: ID!, $first:Int!, $after:String) {
   node(id: $id) {
     ... on PullRequest {
-      comments(first:$first, after:$cursor) {
-        nodes {
-          createdAt
+      comments(first:$first, after:$after) {
+        pageInfo {
+          hasNextPage
+            endCursor
+        }
+        edges {
+          node {
+            createdAt
+          }
         }
       }
     }

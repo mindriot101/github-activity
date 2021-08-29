@@ -1,12 +1,16 @@
-query FetchPullRequests($name:String!, $owner:String!, $cursor:String, $pageSize:Int!) {
+query FetchPullRequests($name:String!, $owner:String!, $after:String, $first:Int!) {
   repository(name: $name, owner: $owner) {
-    pullRequests(first: $pageSize, after:$cursor) {
+    pullRequests(first: $first, after:$after) {
       pageInfo {
         hasNextPage
         endCursor
       }
-      nodes {
-        id
+      edges {
+        node {
+            id
+            title
+            createdAt
+        }
       }
     }
   }

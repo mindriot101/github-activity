@@ -4,7 +4,7 @@ query FetchIssueComments($id:ID!, $first: Int!, $after: String) {
       comments(first:$first, after:$after) {
         pageInfo {
           hasNextPage
-          endCursor
+            endCursor
         }
         edges {
           node {
