@@ -7,6 +7,7 @@ query FetchCommitsForBranch($id: ID!, $first: Int, $after: String) {
           history(first: $first, after: $after) {
             pageInfo {
               hasNextPage
+              endCursor
             }
             edges {
               node {

@@ -18,6 +18,7 @@ def query_fetch_branches():
     _op_repository_refs_edges = _op_repository_refs.edges()
     _op_repository_refs_edges_node = _op_repository_refs_edges.node()
     _op_repository_refs_edges_node.id()
+    _op_repository_refs_edges_node.name()
     return _op
 
 

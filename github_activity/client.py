@@ -3,6 +3,8 @@ import logging
 from sgqlc.endpoint.http import HTTPEndpoint
 
 from github_activity import (
+    fetch_branches,
+    fetch_commits_for_branch,
     fetch_issue_comments,
     fetch_issues,
     fetch_pull_request_comments,
@@ -21,7 +23,7 @@ class Client:
     def __init__(self, token, page_size=DEFAULT_PAGE_SIZE):
         logger.debug("creating client")
         self.endpoint = HTTPEndpoint(
-            HOSTNAME, base_headers={"Authorization": f"Bearer {token}"}, timeout=5
+            HOSTNAME, base_headers={"Authorization": f"Bearer {token}"}, timeout=30
         )
         self.page_size = page_size
 
@@ -36,13 +38,16 @@ class Client:
             for comment in self._pull_request_comments(pr.id):
                 yield comment
 
+        for ref in self._refs(owner, repo):
+            for commit in self._commits(ref.id):
+                yield commit
+
     def _issues(self, owner, repo):
         base_data = {"owner": owner, "name": repo, "first": self.page_size}
         yield from self._paginate(
             op=fetch_issues.Operations.query.fetch_issues,
             base_data=base_data,
-            edges_lens_fn=lambda data: data.repository.issues.edges,
-            page_info_lens_fn=lambda data: data.repository.issues.page_info,
+            base_lens_fn=lambda data: data.repository.issues,
         )
 
     def _issue_comments(self, id):
@@ -50,8 +55,7 @@ class Client:
         yield from self._paginate(
             op=fetch_issue_comments.Operations.query.fetch_issue_comments,
             base_data=base_data,
-            edges_lens_fn=lambda data: data.node.comments.edges,
-            page_info_lens_fn=lambda data: data.node.comments.page_info,
+            base_lens_fn=lambda data: data.node.comments,
         )
 
     def _pull_requests(self, owner, repo):
@@ -59,8 +63,7 @@ class Client:
         yield from self._paginate(
             op=fetch_pull_requests.Operations.query.fetch_pull_requests,
             base_data=base_data,
-            edges_lens_fn=lambda data: data.repository.pull_requests.edges,
-            page_info_lens_fn=lambda data: data.repository.pull_requests.page_info,
+            base_lens_fn=lambda data: data.repository.pull_requests,
         )
 
     def _pull_request_comments(self, id):
@@ -68,11 +71,26 @@ class Client:
         yield from self._paginate(
             op=fetch_pull_request_comments.Operations.query.fetch_pull_request_comments,
             base_data=base_data,
-            edges_lens_fn=lambda data: data.node.comments.edges,
-            page_info_lens_fn=lambda data: data.node.comments.page_info,
+            base_lens_fn=lambda data: data.node.comments,
         )
 
-    def _paginate(self, op, base_data, edges_lens_fn, page_info_lens_fn):
+    def _refs(self, owner, repo):
+        base_data = {"owner": owner, "name": repo, "first": self.page_size}
+        yield from self._paginate(
+            op=fetch_branches.Operations.query.fetch_branches,
+            base_data=base_data,
+            base_lens_fn=lambda data: data.repository.refs,
+        )
+
+    def _commits(self, id):
+        base_data = {"id": id, "first": self.page_size}
+        yield from self._paginate(
+            op=fetch_commits_for_branch.Operations.query.fetch_commits_for_branch,
+            base_data=base_data,
+            base_lens_fn=lambda data: data.node.target.history,
+        )
+
+    def _paginate(self, op, base_data, base_lens_fn):
         after = None
         while True:
             data = base_data.copy()
@@ -81,10 +99,13 @@ class Client:
             data = self.endpoint(op, data)
             typed_data = op + data
 
-            for edge in edges_lens_fn(typed_data):
+            base_node = base_lens_fn(typed_data)
+
+            for edge in base_node.edges:
                 yield edge.node
 
-            page_info = page_info_lens_fn(typed_data)
+            page_info = base_node.page_info
             if not page_info.has_next_page:
                 break
+
             after = page_info.end_cursor

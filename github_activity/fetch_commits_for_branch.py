@@ -18,6 +18,7 @@ def query_fetch_commits_for_branch():
     _op_node__as__Ref_target__as__Commit_history = _op_node__as__Ref_target__as__Commit.history(first=sgqlc.types.Variable('first'), after=sgqlc.types.Variable('after'))
     _op_node__as__Ref_target__as__Commit_history_page_info = _op_node__as__Ref_target__as__Commit_history.page_info()
     _op_node__as__Ref_target__as__Commit_history_page_info.has_next_page()
+    _op_node__as__Ref_target__as__Commit_history_page_info.end_cursor()
     _op_node__as__Ref_target__as__Commit_history_edges = _op_node__as__Ref_target__as__Commit_history.edges()
     _op_node__as__Ref_target__as__Commit_history_edges_node = _op_node__as__Ref_target__as__Commit_history_edges.node()
     _op_node__as__Ref_target__as__Commit_history_edges_node.committed_date()

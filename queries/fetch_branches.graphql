@@ -8,6 +8,7 @@ query FetchBranches($name: String!, $owner: String!, $first: Int!, $after: Strin
       edges {
         node {
           id
+          name
         }
       }
     }
