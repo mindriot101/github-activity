@@ -1,9 +1,9 @@
+import enum
 import logging
 
 from sgqlc.endpoint.http import HTTPEndpoint
 
 from github_activity import (
-    fetch_branches,
     fetch_commits_for_branch,
     fetch_issue_comments,
     fetch_issues,
@@ -19,6 +19,29 @@ DEFAULT_PAGE_SIZE = 100
 logger = logging.getLogger(__name__)
 
 
+class EventType(enum.Enum):
+    IssueCreated = enum.auto()
+    IssueComment = enum.auto()
+    PullRequestCreated = enum.auto()
+    PullRequestComment = enum.auto()
+    Commit = enum.auto()
+
+    def to_dict(self):
+        return self.name
+
+
+class Event:
+    def __init__(self, type, node):
+        self.type = type
+        self.node = node
+
+    def to_dict(self):
+        node_data = self.node.__to_json_value__()
+        if self.type == EventType.Commit:
+            node_data["createdAt"] = node_data.pop("committedDate")
+        return {"type": self.type.to_dict(), **node_data}
+
+
 class Client:
     def __init__(self, token, page_size=DEFAULT_PAGE_SIZE):
         logger.debug("creating client")
@@ -27,20 +50,19 @@ class Client:
         )
         self.page_size = page_size
 
-    def timeline(self, owner, repo):
+    def timeline(self, owner, repo, branch):
         for issue in self._issues(owner, repo):
-            yield issue
+            yield Event(type=EventType.IssueCreated, node=issue)
             for comment in self._issue_comments(issue.id):
-                yield comment
+                yield Event(type=EventType.IssueComment, node=comment)
 
         for pr in self._pull_requests(owner, repo):
-            yield pr
+            yield Event(type=EventType.PullRequestCreated, node=pr)
             for comment in self._pull_request_comments(pr.id):
-                yield comment
+                yield Event(type=EventType.PullRequestComment, node=comment)
 
-        for ref in self._refs(owner, repo):
-            for commit in self._commits(ref.id):
-                yield commit
+        for commit in self._commits(owner, repo, branch):
+            yield Event(type=EventType.Commit, node=commit)
 
     def _issues(self, owner, repo):
         base_data = {"owner": owner, "name": repo, "first": self.page_size}
@@ -74,20 +96,17 @@ class Client:
             base_lens_fn=lambda data: data.node.comments,
         )
 
-    def _refs(self, owner, repo):
-        base_data = {"owner": owner, "name": repo, "first": self.page_size}
-        yield from self._paginate(
-            op=fetch_branches.Operations.query.fetch_branches,
-            base_data=base_data,
-            base_lens_fn=lambda data: data.repository.refs,
-        )
-
-    def _commits(self, id):
-        base_data = {"id": id, "first": self.page_size}
+    def _commits(self, owner, repo, branch):
+        base_data = {
+            "owner": owner,
+            "name": repo,
+            "branch": branch,
+            "first": self.page_size,
+        }
         yield from self._paginate(
             op=fetch_commits_for_branch.Operations.query.fetch_commits_for_branch,
             base_data=base_data,
-            base_lens_fn=lambda data: data.node.target.history,
+            base_lens_fn=lambda data: data.repository.ref.target.history,
         )
 
     def _paginate(self, op, base_data, base_lens_fn):

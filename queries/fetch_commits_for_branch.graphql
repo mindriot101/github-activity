@@ -1,7 +1,8 @@
-query FetchCommitsForBranch($id: ID!, $first: Int, $after: String) {
-  node(id: $id) {
-    ... on Ref {
+query FetchCommitsForBranch($name: String!, $owner: String!, $branch: String!, $first: Int!, $after: String) {
+  repository(owner: $owner, name: $name) {
+    ref(qualifiedName: $branch) {
       name
+      prefix
       target {
         ... on Commit {
           history(first: $first, after: $after) {
@@ -11,8 +12,8 @@ query FetchCommitsForBranch($id: ID!, $first: Int, $after: String) {
             }
             edges {
               node {
-                committedDate
                 oid
+                createdAt: committedDate
               }
             }
           }
