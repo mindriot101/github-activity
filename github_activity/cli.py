@@ -40,5 +40,23 @@ def generate(owner, repository, branch, output):
 
 
 @main.command()
-def render():
-    pass
+@click.argument("input", type=click.File(mode="r"))
+def render(input):
+    import pandas as pd
+    import matplotlib.pyplot as plt
+
+    df = pd.read_json(input)
+    df["createdAt"] = pd.to_datetime(df["createdAt"])
+    df.sort_values(by="createdAt")
+    df = df.set_index("createdAt")
+
+    fig, axis = plt.subplots()
+    for (typ, g) in df.groupby("type"):
+        d = g.resample("1Y").count()
+        x = d.index
+        y = d["type"]
+        axis.bar(x=x.values, height=y.values, label=typ, width=1.0)
+    axis.legend(loc="best")
+    fig.autofmt_xdate()
+    fig.tight_layout()
+    plt.show()
